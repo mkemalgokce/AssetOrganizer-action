@@ -30,10 +30,15 @@ runs:
     - name: Install AssetOrganizer
       shell: bash
       run: |
-        curl -L https://github.com/mkemalgokce/AssetOrganizer/releases/download/v1.0.0/AssetOrganizer-v1.0.0-macos.zip -o AssetOrganizer.zip
-        unzip AssetOrganizer.zip
-        chmod +x AssetOrganizer
-        sudo mv AssetOrganizer /usr/local/bin/
+        if ! command -v AssetOrganizer &> /dev/null; then
+          echo "Installing AssetOrganizer..."
+          curl -L https://github.com/mkemalgokce/AssetOrganizer/releases/download/v1.0.0/AssetOrganizer-v1.0.0-macos.zip -o AssetOrganizer.zip
+          unzip AssetOrganizer.zip
+          chmod +x AssetOrganizer
+          sudo mv AssetOrganizer /usr/local/bin/
+        else
+          echo "AssetOrganizer is already installed"
+        fi
     
     - name: Analyze Assets
       shell: bash
@@ -49,10 +54,29 @@ runs:
           OPTIONS="$OPTIONS -t ${{ inputs.asset-type }}"
         fi
         
+        # Run analysis
         AssetOrganizer analyze -d ${{ inputs.project-path }} $OPTIONS
-      
+        
+        # Add results to step summary
+        echo "## Asset Analysis Results" >> $GITHUB_STEP_SUMMARY
+        if [ "${{ inputs.output-format }}" = "json" ]; then
+          echo '```json' >> $GITHUB_STEP_SUMMARY
+          cat report.json >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        else
+          cat report.md >> $GITHUB_STEP_SUMMARY
+        fi
+        
+        # Check if analysis found any issues
+        if [ -s report.${{ inputs.output-format }} ]; then
+          echo "::warning::Found unused assets in the project"
+        else
+          echo "::notice::No unused assets found"
+        fi
+    
     - name: Upload Report
       uses: actions/upload-artifact@v3
+      if: always()
       with:
         name: asset-analysis-report
         path: report.*
