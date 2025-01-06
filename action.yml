@@ -1,0 +1,63 @@
+name: 'AssetOrganizer'
+description: 'Analyze and detect unused assets in iOS/macOS projects'
+author: 'mkemalgokce'
+
+branding:
+  icon: 'trash-2'
+  color: 'red'
+
+inputs:
+  project-path:
+    description: 'Path to the project directory to analyze'
+    required: true
+    default: '.'
+  output-format:
+    description: 'Output format (md, json)'
+    required: false
+    default: 'md'
+  min-size:
+    description: 'Minimum size threshold (e.g., 100KB, 1MB)'
+    required: false
+    default: '0'
+  asset-type:
+    description: 'Asset type to analyze (image, color, data)'
+    required: false
+    default: 'all'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up Swift
+      uses: swift-actions/setup-swift@v1
+      with:
+        swift-version: "5.9"
+    
+    - name: Install AssetOrganizer
+      shell: bash
+      run: |
+        git clone https://github.com/mkemalgokce/AssetOrganizer.git
+        cd AssetOrganizer
+        swift build -c release
+        sudo cp .build/release/AssetOrganizer /usr/local/bin/
+    
+    - name: Analyze Assets
+      shell: bash
+      run: |
+        OPTIONS=""
+        if [ "${{ inputs.output-format }}" != "" ]; then
+          OPTIONS="$OPTIONS -o report.${{ inputs.output-format }}"
+        fi
+        if [ "${{ inputs.min-size }}" != "0" ]; then
+          OPTIONS="$OPTIONS -m ${{ inputs.min-size }}"
+        fi
+        if [ "${{ inputs.asset-type }}" != "all" ]; then
+          OPTIONS="$OPTIONS -t ${{ inputs.asset-type }}"
+        fi
+        
+        AssetOrganizer analyze -d ${{ inputs.project-path }} $OPTIONS
+      
+    - name: Upload Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: asset-analysis-report
+        path: report.* 
