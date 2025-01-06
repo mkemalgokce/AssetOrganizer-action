@@ -4,10 +4,6 @@
 
 A GitHub Action to detect and analyze unused assets in iOS/macOS projects. This action helps you identify and clean up unused assets in your Xcode projects, reducing app size and maintaining a cleaner codebase.
 
-// ... rest of the existing content ...
-
-A GitHub Action to detect and analyze unused assets in iOS/macOS projects. This action helps you identify and clean up unused assets in your Xcode projects, reducing app size and maintaining a cleaner codebase.
-
 ## Features
 
 - 🔍 Detects unused assets in your project
