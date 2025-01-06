@@ -32,7 +32,13 @@ runs:
       run: |
         if ! command -v AssetOrganizer &> /dev/null; then
           echo "Installing AssetOrganizer..."
-          curl -L https://github.com/mkemalgokce/AssetOrganizer/releases/download/v1.1.0/AssetOrganizer-v1.1.0.zip -o AssetOrganizer.zip
+          # Get latest release info from GitHub API
+          LATEST_RELEASE=$(curl -s https://api.github.com/repos/mkemalgokce/AssetOrganizer/releases/latest)
+          DOWNLOAD_URL=$(echo "$LATEST_RELEASE" | grep "browser_download_url.*zip" | cut -d '"' -f 4)
+          VERSION=$(echo "$LATEST_RELEASE" | grep "tag_name" | cut -d '"' -f 4)
+          
+          echo "Installing version: $VERSION"
+          curl -L "$DOWNLOAD_URL" -o AssetOrganizer.zip
           unzip AssetOrganizer.zip
           chmod +x AssetOrganizer
           sudo mv AssetOrganizer /usr/local/bin/
@@ -75,7 +81,7 @@ runs:
         fi
     
     - name: Upload Report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       if: always()
       with:
         name: asset-analysis-report
