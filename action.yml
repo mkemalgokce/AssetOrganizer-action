@@ -64,7 +64,6 @@ runs:
         AssetOrganizer analyze -d ${{ inputs.project-path }} $OPTIONS
         
         # Add results to step summary
-        echo "## Asset Analysis Results" >> $GITHUB_STEP_SUMMARY
         if [ "${{ inputs.output-format }}" = "json" ]; then
           echo '```json' >> $GITHUB_STEP_SUMMARY
           cat report.json >> $GITHUB_STEP_SUMMARY
