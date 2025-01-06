@@ -27,18 +27,13 @@ inputs:
 runs:
   using: 'composite'
   steps:
-    - name: Set up Swift
-      uses: swift-actions/setup-swift@v1
-      with:
-        swift-version: "5.9"
-    
     - name: Install AssetOrganizer
       shell: bash
       run: |
-        git clone https://github.com/mkemalgokce/AssetOrganizer.git
-        cd AssetOrganizer
-        swift build -c release
-        sudo cp .build/release/AssetOrganizer /usr/local/bin/
+        curl -L https://github.com/mkemalgokce/AssetOrganizer/releases/download/v1.0.0/AssetOrganizer-v1.0.0-macos.zip -o AssetOrganizer.zip
+        unzip AssetOrganizer.zip
+        chmod +x AssetOrganizer
+        sudo mv AssetOrganizer /usr/local/bin/
     
     - name: Analyze Assets
       shell: bash
@@ -60,4 +55,4 @@ runs:
       uses: actions/upload-artifact@v3
       with:
         name: asset-analysis-report
-        path: report.* 
+        path: report.*
